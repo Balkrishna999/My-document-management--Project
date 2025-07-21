@@ -6,6 +6,60 @@ export async function fetchAllDocuments(token) {
   if (!res.ok) throw new Error('Failed to fetch documents');
   return res.json();
 }
+
+// Notes API functions
+export async function fetchNotes(token) {
+  const res = await fetch(`${API_URL}/notes`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Failed to fetch notes');
+  return res.json();
+}
+
+export async function createNote(token, noteData) {
+  const res = await fetch(`${API_URL}/notes`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}` 
+    },
+    body: JSON.stringify(noteData)
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to create note');
+  }
+  return res.json();
+}
+
+export async function updateNote(token, noteId, noteData) {
+  const res = await fetch(`${API_URL}/notes/${noteId}`, {
+    method: 'PUT',
+    headers: { 
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}` 
+    },
+    body: JSON.stringify(noteData)
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to update note');
+  }
+  return res.json();
+}
+
+export async function deleteNote(token, noteId) {
+  const res = await fetch(`${API_URL}/notes/${noteId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to delete note');
+  }
+  return res.json();
+}
+
 // Fetch recent history for the logged-in user
 export async function fetchRecents(token) {
   const res = await fetch(`${API_URL}/recents`, {

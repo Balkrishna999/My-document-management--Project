@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 export default function DocumentModal({ doc, currentUser, onClose }) {
-  const [showUpload, setShowUpload] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   async function downloadDocument() {
@@ -116,26 +115,6 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
     }
   }
 
-  function uploadNewVersion(e) {
-    const file = e.target.files[0];
-    if (file) {
-      const docs = JSON.parse(localStorage.getItem('dms_documents')) || [];
-      const idx = docs.findIndex(d => d.id === doc.id);
-      const currentVersion = parseFloat(docs[idx].version);
-      const newVersion = (currentVersion + 0.1).toFixed(1);
-      docs[idx].version = newVersion;
-      docs[idx].uploadDate = new Date().toISOString();
-      docs[idx].versions.push({
-        version: newVersion,
-        date: new Date().toISOString(),
-        uploader: currentUser.username
-      });
-      localStorage.setItem('dms_documents', JSON.stringify(docs));
-      alert(`New version ${newVersion} uploaded successfully!`);
-      onClose();
-    }
-  }
-
   function renderFilePreview() {
     if (!doc.fileUrl) return <div style={{color:'#888'}}>No preview available.</div>;
     const type = doc.fileType.toLowerCase();
@@ -201,10 +180,6 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
                 alert('Preview not supported for this file type. Please download instead.');
               }
             }}>Open</button>
-            <label className="btn btn-secondary" style={{marginBottom:0}}>
-              Upload New Version
-              <input type="file" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.svg,.webp" style={{display:'none'}} onChange={uploadNewVersion} />
-            </label>
             <button className="btn btn-danger" onClick={deleteDocument} disabled={deleting}>
               {deleting ? 'Deleting...' : 'Delete'}
             </button>

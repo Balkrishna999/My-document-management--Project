@@ -4,10 +4,12 @@ import UploadView from '../views/UploadView';
 import UsersView from '../views/UsersView';
 import RecentsView from '../views/RecentsView';
 import DataUsageView from '../views/DataUsageView';
+import NotesView from '../views/NotesView';
 
 const NAV = [
   { key: 'documents', label: 'Documents', icon: 'fa-file-alt' },
   { key: 'upload', label: 'Upload', icon: 'fa-upload' },
+  { key: 'notes', label: 'Notes', icon: 'fa-sticky-note' },
   { key: 'users', label: 'Users', icon: 'fa-users', admin: true },
   { key: 'recents', label: 'Recents History', icon: 'fa-history' },
   { key: 'datausage', label: 'Data Usage', icon: 'fa-chart-pie' }, // Added Data Usage nav
@@ -50,6 +52,7 @@ export default function DashboardScreen({ currentUser, setCurrentUser }) {
           <main className="main-content" style={{flex:1,padding:'36px',background:'#f8fafc',minHeight:'calc(100vh - 80px)'}}>
             {view === 'documents' && <DocumentsView currentUser={currentUser} />}
             {view === 'upload' && <UploadView currentUser={currentUser} />}
+            {view === 'notes' && <NotesView currentUser={currentUser} />}
             {view === 'users' && currentUser.role === 'admin' && <UsersView currentUser={currentUser} />}
             {view === 'recents' && <RecentsView currentUser={currentUser} />}
             {view === 'datausage' && <DataUsageView currentUser={currentUser} />} {/* Data Usage View */}
