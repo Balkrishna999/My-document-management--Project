@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import DocumentModal from './DocumentModal';
 import { fetchDocuments } from '../api';
 
-export default function DocumentsView({ currentUser }) {
+export default function DocumentsView({ currentUser, theme, toggleTheme }) {
   const [documents, setDocuments] = useState([]);
   const [search, setSearch] = useState('');
   const [modalDoc, setModalDoc] = useState(null);
@@ -49,11 +49,14 @@ export default function DocumentsView({ currentUser }) {
 
   return (
     <div id="documentsView" className="view active">
-      <div className="view-header">
+      <div className="view-header" style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
         <h2>Documents</h2>
-        <div className="search-bar">
-          <input type="text" placeholder="Search documents..." value={search} onChange={e => setSearch(e.target.value)} />
-          <i className="fas fa-search"></i>
+        <div style={{display:'flex',alignItems:'center',gap:16}}>
+          <div className="search-bar">
+            <input type="text" placeholder="Search documents..." value={search} onChange={e => setSearch(e.target.value)} />
+            <i className="fas fa-search"></i>
+          </div>
+          {/* Theme toggle button removed as requested */}
         </div>
       </div>
       {loading ? <div>Loading documents...</div> : (

@@ -6,6 +6,7 @@ import DashboardScreen from './screens/DashboardScreen';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
 
   // Persist login state using JWT and user info
   useEffect(() => {
@@ -20,6 +21,17 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', theme === 'dark');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  // Toggle between light and dark theme
+  function toggleTheme() {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  }
+
+  
   // When user logs in, store user info in localStorage
   function handleSetCurrentUser(user) {
     if (user) {
@@ -36,7 +48,12 @@ function App() {
       {!currentUser ? (
         <AuthScreen setCurrentUser={handleSetCurrentUser} />
       ) : (
-        <DashboardScreen currentUser={currentUser} setCurrentUser={handleSetCurrentUser} />
+        <DashboardScreen
+          currentUser={currentUser}
+          setCurrentUser={handleSetCurrentUser}
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
       )}
     </div>
   );

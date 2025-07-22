@@ -12,6 +12,131 @@ body {
   margin: 0;
   min-height: 100vh;
 }
+/* Dark mode overrides */
+body.dark-mode {
+  background: #121212 !important;
+  color: #ddd;
+}
+/* Enhance text visibility in dark mode */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: #fff !important;
+}
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode a,
+body.dark-mode label {
+  color: #eee !important;
+}
+body.dark-mode .login-container {
+  background: #121212 !important;
+}
+body.dark-mode .sidebar {
+  background: #1e1e1e;
+  border-right: 1px solid #444;
+}
+body.dark-mode .sidebar .nav-link {
+  color: #ccc;
+}
+body.dark-mode .sidebar .nav-link.active {
+  background: #333;
+  color: #fff;
+}
+body.dark-mode .header {
+  background: #222;
+  border-bottom: 1px solid #444;
+  color: #eee;
+}
+body.dark-mode .main-content {
+  background: #121212;
+  color: #ddd;
+}
+body.dark-mode .view-header h2 {
+  color: #fff;
+}
+body.dark-mode .documents-grid .document-card {
+  background: #1e1e1e;
+  color: #ddd;
+  border: 1px solid #444;
+}
+/* Dark mode overrides for Recents History table */
+body.dark-mode .recents-table-responsive {
+  background: transparent !important;
+}
+body.dark-mode .recents-table-responsive table {
+  width: 100%;
+  border-collapse: collapse;
+}
+body.dark-mode .recents-table-responsive th,
+body.dark-mode .recents-table-responsive td {
+  color: #ddd !important;
+  border-bottom: 1px solid #444 !important;
+  padding: 12px !important;
+}
+body.dark-mode .recents-table-responsive thead th {
+  background: #2a2a2a !important;
+  color: #ddd !important;
+}
+body.dark-mode .recents-table-responsive tr {
+  background: #1e1e1e;
+}
+body.dark-mode .recents-table-responsive td:before {
+  color: #ccc;
+}
+/* Dark mode overrides for Users Management table */
+body.dark-mode .users-table {
+  background: transparent !important;
+  border: none !important;
+}
+body.dark-mode .users-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+body.dark-mode .users-table th,
+body.dark-mode .users-table td {
+  color: #ddd;
+  border-bottom: 1px solid #444;
+  padding: 18px;
+}
+body.dark-mode .users-table thead th {
+  background: #2a2a2a;
+  color: #fff;
+}
+body.dark-mode .users-table tbody tr {
+  background: #1e1e1e;
+}
+body.dark-mode .users-table tbody tr:hover {
+  background: #333;
+}
+body.dark-mode .search-bar input {
+  background: #222;
+  color: #ddd;
+  border-color: #444;
+  /* enhance placeholder contrast */
+}
+body.dark-mode .search-bar input::placeholder {
+  color: #aaa;
+}
+body.dark-mode .search-bar i {
+  color: #ddd !important;
+}
+body.dark-mode input,
+body.dark-mode textarea {
+  background: #222;
+  color: #ddd;
+  border-color: #444;
+}
+/* Dark mode override for view headers */
+body.dark-mode .view-header {
+  background: rgba(32, 32, 32, 0.85) !important;
+  border: 1px solid #444 !important;
+  backdrop-filter: blur(15px) !important;
+  color: #eee !important;
+}
 
 .screen {
   display: none;
