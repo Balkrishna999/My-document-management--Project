@@ -7,6 +7,12 @@ import Recent from '../models/Recent.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import {
+  validateFileType,
+  getCloudinaryResourceType,
+  getContentTypes,
+  extractFileExtension
+} from '../utils/fileTypes.js';
 dotenv.config();
 
 cloudinary.config({
@@ -25,48 +31,48 @@ router.post('/upload', authMiddleware, upload.single('file'), async (req, res) =
     const file = req.file;
     if (!file) return res.status(400).json({ message: 'No file uploaded' });
     const user = await User.findById(req.user.id);
-    
+
     // Determine resource type based on file type
-    const isPDF = file.mimetype === 'application/pdf' || file.originalname.toLowerCase().endsWith('.pdf');
-    const isImage = file.mimetype.startsWith('image/') || 
-                   ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'].includes(
-                     file.originalname.split('.').pop().toLowerCase()
-                   );
-    
-    let resourceType = 'auto';
-    if (isPDF) {
-      resourceType = 'raw';
-    } else if (isImage) {
-      resourceType = 'image';
+    const fileExtension = extractFileExtension(file.originalname);
+
+    // Validate file type using utility
+    const validation = validateFileType(file.originalname);
+    if (!validation.isValid) {
+      return res.status(400).json({
+        message: 'File type not supported',
+        allowedTypes: validation.supportedTypes
+      });
     }
-    
+
+    const resourceType = getCloudinaryResourceType(fileExtension);
+
     const uploadStream = cloudinary.uploader.upload_stream(
-      { 
+      {
         resource_type: resourceType,
         quality: 'auto',
         fetch_format: 'auto'
-      }, 
+      },
       async (error, result) => {
-      if (error) {
-        console.error('Cloudinary upload error:', error);
-        return res.status(500).json({ message: 'Cloudinary error', error: error.message });
-      }
-      const doc = new Document({
-        title,
-        description,
-        fileType: file.originalname.split('.').pop(),
-        fileUrl: result.secure_url,
-        fileSize: file.size,
-        uploader: user._id,
-        accessLevel,
+        if (error) {
+          console.error('Cloudinary upload error:', error);
+          return res.status(500).json({ message: 'Cloudinary error', error: error.message });
+        }
+        const doc = new Document({
+          title,
+          description,
+          fileType: fileExtension, // Store lowercase extension
+          fileUrl: result.secure_url,
+          fileSize: file.size,
+          uploader: user._id,
+          accessLevel,
+        });
+        await doc.save();
+        // Log upload to recents
+        try {
+          await Recent.create({ user: user._id, document: doc._id, action: 'upload' });
+        } catch (e) { /* ignore logging errors */ }
+        res.status(201).json(doc);
       });
-      await doc.save();
-      // Log upload to recents
-      try {
-        await Recent.create({ user: user._id, document: doc._id, action: 'upload' });
-      } catch (e) { /* ignore logging errors */ }
-      res.status(201).json(doc);
-    });
     uploadStream.end(file.buffer);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err });
@@ -94,9 +100,9 @@ router.get('/download/:id', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     const doc = await Document.findById(req.params.id);
-    
+
     if (!doc) return res.status(404).json({ message: 'Document not found' });
-    
+
     // Check access permissions
     if (doc.uploader.toString() !== user._id.toString() && user.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized to access this document' });
@@ -105,28 +111,18 @@ router.get('/download/:id', authMiddleware, async (req, res) => {
     // Set appropriate headers for download
     const fileExtension = doc.fileType?.toLowerCase() || '';
     const filename = `${doc.title}.${fileExtension}`;
-    
+
     // Set Content-Disposition header to force download
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    
-    // Set appropriate content type
-    const contentTypes = {
-      'pdf': 'application/pdf',
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg', 
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'txt': 'text/plain',
-      'doc': 'application/msword',
-      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    };
-    
+
+    // Set appropriate content type using utility
+    const contentTypes = getContentTypes();
     const contentType = contentTypes[fileExtension] || 'application/octet-stream';
     res.setHeader('Content-Type', contentType);
-    
+
     // Redirect to the file URL with download headers
     res.redirect(doc.fileUrl);
-    
+
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { uploadDocument } from '../api';
+import { validateFileType, getSupportedExtensions } from '../utils/fileTypes';
 
 export default function UploadView({ currentUser }) {
   const [title, setTitle] = useState('');
@@ -7,27 +8,29 @@ export default function UploadView({ currentUser }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Generate accept attribute dynamically
+  const acceptedFileTypes = getSupportedExtensions().map(ext => `.${ext}`).join(',');
+
   async function handleUpload() {
     if (!title || !file) {
       alert('Please fill in all required fields and select a file.');
       return;
     }
-    
+
     // Validate file size (max 10MB)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
       alert('File size too large. Maximum size allowed is 10MB.');
       return;
     }
-    
-    // Validate file type
-    const allowedTypes = ['pdf', 'doc', 'docx', 'txt', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'];
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-    if (!allowedTypes.includes(fileExtension)) {
-      alert('Invalid file type. Please select a supported file format.');
+
+    // Validate file type using utility
+    const validation = validateFileType(file.name);
+    if (!validation.isValid) {
+      alert(`Invalid file type. Supported formats: ${validation.supportedTypes.join(', ').toUpperCase()}`);
       return;
     }
-    
+
     setLoading(true);
     try {
       const token = localStorage.getItem('jwt_token');
@@ -39,8 +42,8 @@ export default function UploadView({ currentUser }) {
         category: 'general',
         accessLevel: 'public',
       });
-      setTitle(''); 
-      setDescription(''); 
+      setTitle('');
+      setDescription('');
       setFile(null);
       // Clear file input
       document.getElementById('fileInput').value = '';
@@ -70,7 +73,7 @@ export default function UploadView({ currentUser }) {
           </div>
           <div className="form-group">
             <label htmlFor="fileInput">Select File</label>
-            <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.svg,.webp" onChange={e => setFile(e.target.files[0])} required />
+            <input type="file" id="fileInput" accept={acceptedFileTypes} onChange={e => setFile(e.target.files[0])} required />
           </div>
           <button type="button" className="btn btn-primary" onClick={handleUpload} disabled={loading}>{loading ? 'Uploading...' : 'Upload Document'}</button>
         </div>

@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { canPreviewFile, getFileCategory, extractFileExtension } from '../utils/fileTypes';
 
 export default function DocumentModal({ doc, currentUser, onClose }) {
   const [deleting, setDeleting] = useState(false);
 
   async function downloadDocument() {
     if (!doc.fileUrl) return alert('No file available for download.');
-    const ext = doc.fileType?.toLowerCase();
-    
+
+    const ext = doc.fileType?.toLowerCase() || '';
+    const fileName = `${doc.title || 'document'}.${ext}`;
+
     if (ext === 'pdf') {
       // For PDFs, try multiple approaches to ensure download works
       try {
@@ -17,7 +20,7 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `${doc.title || 'document'}.pdf`;
+          a.download = fileName;
           document.body.appendChild(a);
           a.click();
           a.remove();
@@ -27,7 +30,7 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
       } catch (err) {
         console.log('Original URL failed, trying raw URL...');
       }
-      
+
       // Second try: Use raw URL
       try {
         const rawUrl = doc.fileUrl.replace('/image/upload/', '/raw/upload/');
@@ -47,15 +50,15 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
       } catch (err) {
         console.log('Raw URL failed, using direct link...');
       }
-      
+
       // Final fallback: Open in new tab
       window.open(doc.fileUrl, '_blank', 'noopener');
     } else {
       // For non-PDFs including images
       let url = doc.fileUrl;
-      
+
       // For images, force download using fetch and blob
-      if (["jpg","jpeg","png","gif","bmp","svg","webp"].includes(ext)) {
+      if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp"].includes(ext)) {
         try {
           // Force download for images instead of opening them
           const response = await fetch(url, { mode: 'cors' });
@@ -64,7 +67,7 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
             const downloadUrl = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = downloadUrl;
-            a.download = `${doc.title || 'image'}.${ext}`;
+            a.download = fileName;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -74,11 +77,11 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
         } catch (err) {
           console.log('Image fetch failed, trying direct download...');
         }
-        
+
         // Fallback: Use download attribute with proper MIME type
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${doc.title || 'image'}.${ext}`;
+        a.download = fileName;
         a.style.display = 'none';
         document.body.appendChild(a);
         a.click();
@@ -87,7 +90,7 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
         // For other file types (doc, txt, etc.)
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${doc.title || 'document'}.${ext || ''}`;
+        a.download = fileName;
         a.target = '_blank';
         document.body.appendChild(a);
         a.click();
@@ -116,32 +119,37 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
   }
 
   function renderFilePreview() {
-    if (!doc.fileUrl) return <div style={{color:'#888'}}>No preview available.</div>;
-    const type = doc.fileType.toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif'].includes(type)) {
-      return <img src={doc.fileUrl} alt={doc.title} style={{maxWidth:'100%',maxHeight:300,margin:'10px auto'}} />;
+    if (!doc.fileUrl) return <div style={{ color: '#888' }}>No preview available.</div>;
+
+    const type = doc.fileType?.toLowerCase() || '';
+
+    // Image files
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'].includes(type)) {
+      return <img src={doc.fileUrl} alt={doc.title} style={{ maxWidth: '100%', maxHeight: 300, margin: '10px auto' }} />;
     }
+
+    // PDF files
     if (type === 'pdf') {
       // Try both image and raw URLs for compatibility
       const displayUrl = doc.fileUrl.includes('/raw/upload/') ? doc.fileUrl : doc.fileUrl;
       return (
         <div>
-          <iframe src={displayUrl} title={doc.title} style={{width:'100%',height:400,border:'none',margin:'10px 0'}} 
-                  onError={(e) => {
-                    // If iframe fails, try raw URL
-                    const rawUrl = doc.fileUrl.replace('/image/upload/', '/raw/upload/');
-                    e.target.src = rawUrl;
-                  }} />
-          <p style={{fontSize:'12px',color:'#666',textAlign:'center'}}>
+          <iframe src={displayUrl} title={doc.title} style={{ width: '100%', height: 400, border: 'none', margin: '10px 0' }}
+            onError={(e) => {
+              // If iframe fails, try raw URL
+              const rawUrl = doc.fileUrl.replace('/image/upload/', '/raw/upload/');
+              e.target.src = rawUrl;
+            }} />
+          <p style={{ fontSize: '12px', color: '#666', textAlign: 'center' }}>
             If preview doesn't load, try the Download or Open button below.
           </p>
         </div>
       );
     }
     if (['txt'].includes(type)) {
-      return <iframe src={doc.fileUrl} title={doc.title} style={{width:'100%',height:200,border:'1px solid #eee',margin:'10px 0'}} />;
+      return <iframe src={doc.fileUrl} title={doc.title} style={{ width: '100%', height: 200, border: '1px solid #eee', margin: '10px 0' }} />;
     }
-    return <div style={{color:'#888'}}>Preview not supported for this file type.</div>;
+    return <div style={{ color: '#888' }}>Preview not supported for this file type.</div>;
   }
 
   return (
@@ -159,11 +167,12 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
             <p><strong>Uploaded:</strong> {new Date(doc.uploadDate).toLocaleDateString()}</p>
             <p><strong>Version:</strong> {doc.version}</p>
           </div>
-          <div className="document-actions" style={{display:'flex',gap:'10px',flexWrap:'wrap'}}>
+          <div className="document-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             <button className="btn btn-primary" onClick={downloadDocument}>Download</button>
             <button className="btn btn-secondary" onClick={async () => {
               if (!doc.fileUrl) return alert('No file available to open.');
-              const type = doc.fileType?.toLowerCase();
+              const type = doc.fileType?.toLowerCase() || '';
+
               if (type === 'pdf') {
                 // Use Google Drive Viewer for PDFs
                 let pdfUrl = doc.fileUrl;
@@ -174,7 +183,7 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
                 // Google Drive Viewer URL
                 const viewerUrl = `https://drive.google.com/viewerng/viewer?embedded=true&url=${encodeURIComponent(pdfUrl)}`;
                 window.open(viewerUrl, '_blank', 'noopener');
-              } else if (["jpg","jpeg","png","gif","txt"].includes(type)) {
+              } else if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", "txt"].includes(type)) {
                 window.open(doc.fileUrl, '_blank', 'noopener');
               } else {
                 alert('Preview not supported for this file type. Please download instead.');
@@ -183,7 +192,7 @@ export default function DocumentModal({ doc, currentUser, onClose }) {
             <button className="btn btn-danger" onClick={deleteDocument} disabled={deleting}>
               {deleting ? 'Deleting...' : 'Delete'}
             </button>
-          {/* Show/Hide File button removed as requested */}
+            {/* Show/Hide File button removed as requested */}
           </div>
           {/* File preview toggling removed as requested */}
           {/* Version history removed: not supported by backend */}

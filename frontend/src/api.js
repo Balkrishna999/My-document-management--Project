@@ -1,3 +1,6 @@
+// API utility for backend communication
+const API_URL = 'http://localhost:5000/api';
+
 // Fetch all documents for the current user (for data usage)
 export async function fetchAllDocuments(token) {
   const res = await fetch(`${API_URL}/documents`, {
@@ -19,9 +22,9 @@ export async function fetchNotes(token) {
 export async function createNote(token, noteData) {
   const res = await fetch(`${API_URL}/notes`, {
     method: 'POST',
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}` 
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify(noteData)
   });
@@ -35,9 +38,9 @@ export async function createNote(token, noteData) {
 export async function updateNote(token, noteId, noteData) {
   const res = await fetch(`${API_URL}/notes/${noteId}`, {
     method: 'PUT',
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}` 
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify(noteData)
   });
@@ -68,8 +71,14 @@ export async function fetchRecents(token) {
   if (!res.ok) throw new Error('Failed to fetch recents');
   return res.json();
 }
-// API utility for backend communication
-const API_URL = 'http://localhost:5000/api';
+
+export async function fetchUserStats(token) {
+  const res = await fetch(`${API_URL}/analytics/user-stats`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Failed to fetch user stats');
+  return res.json();
+}
 
 export async function login(username, password) {
   const res = await fetch(`${API_URL}/auth/login`, {

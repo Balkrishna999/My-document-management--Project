@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import documentRoutes from './routes/documents.js';
 import recentsRoutes from './routes/recents.js';
 import notesRoutes from './routes/notes.js';
+import analyticsRoutes from './routes/analytics.js';
 import { v2 as cloudinary } from 'cloudinary';
 
 dotenv.config();
@@ -23,8 +24,8 @@ app.use(express.json());
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     message: 'Server is running',
     timestamp: new Date().toISOString()
   });
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/recents', recentsRoutes);
 app.use('/api/notes', notesRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 const PORT = process.env.PORT || 5000;
 
@@ -48,7 +50,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => {
     console.error('❌ MongoDB connection error:', err.message);
     console.error('Full error:', err);
-    
+
     // Start server anyway for testing (without MongoDB)
     app.listen(PORT, () => {
       console.log(`⚠️  Server running on port ${PORT} (MongoDB connection failed)`);

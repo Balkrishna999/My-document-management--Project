@@ -1,0 +1,89 @@
+{
+  "React Functional Component": {
+    "prefix": "rfc",
+    "body": [
+      "import React, { useState, useEffect } from 'react';",
+      "import './${1:ComponentName}.css';",
+      "",
+      "const ${1:ComponentName} = () => {",
+      "  const [${2:state}, set${2/(.*)/${1:/capitalize}/}] = useState(${3:initialValue});",
+      "",
+      "  useEffect(() => {",
+      "    ${4:// Effect logic here}",
+      "  }, []);",
+      "",
+      "  return (",
+      "    <div className=\"${1/(.*)/${1:/downcase}/}-container\">",
+      "      ${5:<!-- Component content -->}",
+      "    </div>",
+      "  );",
+      "};",
+      "",
+      "export default ${1:ComponentName};"
+    ],
+    "description": "Create a React functional component with hooks"
+  },
+  "API Service Function": {
+    "prefix": "apiservice",
+    "body": [
+      "export const ${1:functionName} = async (${2:params}) => {",
+      "  try {",
+      "    const response = await fetch(`${API_BASE_URL}/${3:endpoint}`, {",
+      "      method: '${4|GET,POST,PUT,DELETE|}',",
+      "      headers: {",
+      "        'Content-Type': 'application/json',",
+      "        'Authorization': `Bearer ${getToken()}`",
+      "      },",
+      "      ${5:body: JSON.stringify(${2:params})}",
+      "    });",
+      "",
+      "    if (!response.ok) {",
+      "      throw new Error(`HTTP error! status: ${response.status}`);",
+      "    }",
+      "",
+      "    return await response.json();",
+      "  } catch (error) {",
+      "    console.error('API Error:', error);",
+      "    throw error;",
+      "  }",
+      "};"
+    ],
+    "description": "Create an API service function"
+  },
+  "Express Route": {
+    "prefix": "expressroute",
+    "body": [
+      "router.${1|get,post,put,delete|}('/${2:endpoint}', async (req, res) => {",
+      "  try {",
+      "    ${3:// Route logic here}",
+      "    const ${4:result} = ${5:// Process request};",
+      "    res.json({ success: true, data: ${4:result} });",
+      "  } catch (error) {",
+      "    console.error('Route Error:', error);",
+      "    res.status(500).json({ success: false, error: error.message });",
+      "  }",
+      "});"
+    ],
+    "description": "Create an Express.js route"
+  },
+  "MongoDB Model Schema": {
+    "prefix": "mongoschema",
+    "body": [
+      "const mongoose = require('mongoose');",
+      "",
+      "const ${1:modelName}Schema = new mongoose.Schema({",
+      "  ${2:fieldName}: {",
+      "    type: ${3|String,Number,Date,Boolean,Object,Array|},",
+      "    required: ${4|true,false|},",
+      "    ${5:unique: true,}",
+      "    ${6:default: ${7:defaultValue}}",
+      "  }",
+      "}, {",
+      "  timestamps: true",
+      "});",
+      "",
+      "module.exports = mongoose.model('${1:modelName}', ${1:modelName}Schema);"
+    ],
+    "description": "Create a MongoDB schema"
+  }
+}
